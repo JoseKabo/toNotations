@@ -17,8 +17,6 @@ namespace toPfx
             InitializeComponent();
         }
 
-        
-
         private void label3_Click(object sender, EventArgs e)
         {
             this.Close();
@@ -38,8 +36,11 @@ namespace toPfx
 
         void proccessingEntry(string cadena)
         {
+            this.stack_ptfx = new Stack<string>();
+            this.stack_pfx_operands = new Stack<string>();
+            this.stack_pfx_operators = new Stack<string>();
             this.lbl_topfx.Text = this.toPrefix(cadena);
-            this.lbl_toptfx.Text = this.toPostfix(this.lbl_topfx.Text);
+            this.lbl_toptfx.Text = this.toPostfix(cadena);
         }
 
         string toPrefix(string cadena)
@@ -115,7 +116,48 @@ namespace toPfx
 
         string toPostfix(string cadena)
         {
-            return "Pendiente";
+            string result = "";
+            for (int i = 0; i < cadena.Length; ++i)
+            {
+                
+                if (char.IsLetterOrDigit(cadena[i]))
+                    result += cadena[i];
+                else if (cadena[i] == '(')
+                    this.stack_ptfx.Push(cadena[i].ToString());
+                
+
+                else if (cadena[i] == ')')
+                {
+                    while (this.stack_ptfx.Count > 0 && this.stack_ptfx.Peek()[0] != '(')
+                    {
+                        result += this.stack_ptfx.Pop();
+                    }
+
+                    if (this.stack_ptfx.Count > 0 && this.stack_ptfx.Peek()[0] != '(')
+                    {
+                        return "Invalid Expression";
+                    }
+                    else
+                    {
+                        this.stack_ptfx.Pop();
+                    }
+                }
+                else
+                {
+                    while (this.stack_ptfx.Count > 0 && this.getOperatorPriority(cadena[i]) <= this.getOperatorPriority(this.stack_ptfx.Peek()[0]))
+                    {
+                        result += this.stack_ptfx.Pop();
+                    }
+                    this.stack_ptfx.Push(cadena[i].ToString());
+                }
+
+            }
+            while (this.stack_ptfx.Count > 0)
+            {
+                result += this.stack_ptfx.Pop();
+            }
+
+            return result;
         }
 
         int getOperatorPriority(char C)
